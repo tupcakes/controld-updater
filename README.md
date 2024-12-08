@@ -1,4 +1,14 @@
 ## Usage
+Clone the repo.
+```shell
+git clone https://github.com/tupcakes/controld-updater.git
+```
+
+Build the image.
+```shell
+podman build -t controld-updater .
+```
+
 ```shell
 podman run controld-updater \
     -a "api.abcd..." \
