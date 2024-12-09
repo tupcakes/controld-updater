@@ -1,4 +1,4 @@
-## Usage
+## Building
 Clone the repo.
 ```shell
 git clone https://github.com/tupcakes/controld-updater.git
@@ -7,6 +7,12 @@ git clone https://github.com/tupcakes/controld-updater.git
 Build the image.
 ```shell
 podman build -t controld-updater .
+```
+
+## Run the container
+*only needed if not building from source*
+```shell
+podman pull ghcr.io/tupcakes/controld-updater
 ```
 
 ```shell
