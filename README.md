@@ -41,3 +41,31 @@ I personally use the json lists from https://github.com/hagezi/dns-blocklists/tr
 - badware-hoster-folder.json
 - referral-allow-folder.json
 
+## Kubernetest Manifest Example
+*Note: Requires x86 based nodes currently.*
+```yaml
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: controld-updater-referral
+spec:
+  schedule: "0 1 * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: controld-updater
+            image: ghcr.io/tupcakes/controld-updater:latest
+            args:
+            - -a
+            - "api.asdfasdf"
+            - -p
+            - "123412asdfas"
+            - -g
+            - "Referral"
+            - -b
+            - "https://raw.githubusercontent.com/hagezi/dns-blocklists/refs/heads/main/controld/referral-allow-folder.json"
+          restartPolicy: OnFailure
+```
