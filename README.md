@@ -1,3 +1,6 @@
+## What is this?
+This a small python scritp I made to update controld folder rules based on the lists maintained at: https://github.com/hagezi/dns-blocklists/tree/main/controld. I personally use the badware and referral lists, and was sick of having to keep track of when they needed to be refreshed in controld. I have the script setup to run every 24 hours for each list I use using kubernetes cronjobs. The script deletes the old list then re-imports it from the hagezi/dns-blocklist repo nightly.
+
 ## Building
 Clone the repo.
 ```shell
