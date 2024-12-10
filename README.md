@@ -39,11 +39,6 @@ The value for "-g" option shown above, should match the group name in the corres
   "rules": [
 ```
 
-
-I personally use the json lists from https://github.com/hagezi/dns-blocklists/tree/main/controld. In particular the below lists.
-- badware-hoster-folder.json
-- referral-allow-folder.json
-
 ## Kubernetest Manifest Example
 ```yaml
 ---
