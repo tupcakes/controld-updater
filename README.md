@@ -14,7 +14,7 @@ podman build -t controld-updater .
 ```shell
 podman pull ghcr.io/tupcakes/controld-updater
 ```
-
+*Image is built to support both amd64 and arm64*
 ```shell
 podman run controld-updater \
     -a "api.abcd..." \
@@ -42,7 +42,6 @@ I personally use the json lists from https://github.com/hagezi/dns-blocklists/tr
 - referral-allow-folder.json
 
 ## Kubernetest Manifest Example
-*Note: Requires x86 based nodes currently.*
 ```yaml
 ---
 apiVersion: batch/v1
