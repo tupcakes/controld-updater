@@ -1,32 +1,39 @@
-import urllib.request, json, requests, argparse
+import json
+import requests
+import argparse
 
+# Helper functions
+def paginate(items, page_size, page_number):
+    start_index = (page_number - 1) * page_size
+    end_index = start_index + page_size
+    return items[start_index:end_index]
 
+def api_request(method, url, headers, payload=None):
+    """Generic API request handler."""
+    response = requests.request(method, url, headers=headers, data=payload)
+    response.raise_for_status()
+    return response.json()
+    
 def get_rule_folders(profile_id, api_key):
-    url = "https://api.controld.com/profiles/" + profile_id + "/groups"
+    url = f"https://api.controld.com/profiles/{profile_id}/groups"
 
     headers = {
         "accept": "application/json",
         "authorization": api_key
     }
 
-    response = requests.get(url, headers=headers)
-
-    json_object = json.loads(response.text)
-    return json_object
+    return api_request("GET", url, headers)
 
 def get_domains(url):
-    with urllib.request.urlopen(url) as url:
-        json_data = json.load(url)
+    with requests.get(url) as response:
+        response.raise_for_status()
+        json_data = response.json()
+    return [rule["PK"] for rule in json_data.get("rules", [])]
 
-    domains = []
-    for i in range(len(json_data["rules"])):
-        domains.append(json_data["rules"][i]["PK"])
-    return domains
+
 
 def delete_rule_folder(profile_id, folder_id, api_key):
-    import requests
-
-    url = "https://api.controld.com/profiles/" + profile_id + "/groups/" + str(folder_id)
+    url = f"https://api.controld.com/profiles/{profile_id}/groups/{folder_id}"
 
     headers = {
         "accept": "application/json",
@@ -34,12 +41,10 @@ def delete_rule_folder(profile_id, folder_id, api_key):
         "authorization": api_key
     }
 
-    response = requests.delete(url, headers=headers)
-
-    print(response.text)
+    api_request("DELETE", url, headers)
 
 def create_rule_folder(name, do, status, profile_id, api_key):
-    url = "https://api.controld.com/profiles/" + profile_id + "/groups"
+    url = f"https://api.controld.com/profiles/{profile_id}/groups"
 
     payload = {
         "name": name,
@@ -52,12 +57,11 @@ def create_rule_folder(name, do, status, profile_id, api_key):
         "authorization": api_key
     }
 
-    response = requests.post(url, data=payload, headers=headers)
+    api_request("POST", url, headers, payload)
 
-    print(response.text)
 
 def create_folder_rules(profile_id, api_key, do, status, group, hostnames):
-    url = "https://api.controld.com/profiles/" + profile_id + "/rules"
+    url = f"https://api.controld.com/profiles/{profile_id}/rules"
 
     payload = {
         "do": do,
@@ -71,19 +75,20 @@ def create_folder_rules(profile_id, api_key, do, status, group, hostnames):
         "authorization": api_key
     }
 
-    response = requests.post(url, data=payload, headers=headers)
+    api_request("POST", url, headers, payload)
 
-    print(response.text)
+    print(f"Successfully updated rule folder '{group_name}' with {len(hostnames)} domains.")
 
 
+# Main script logic
 # Initialize parser
 parser = argparse.ArgumentParser()
 
-# Adding optional argument
-parser.add_argument('-a', '--api_key')
-parser.add_argument('-p', '--profile_id')
-parser.add_argument('-g', '--group_name')
-parser.add_argument('-b', '--blocklist_url')
+# Adding arguments
+parser.add_argument("-a", "--api_key", required=True, help="API Key for authorization")
+parser.add_argument("-p", "--profile_id", required=True, help="Profile ID")
+parser.add_argument("-g", "--group_name", required=True, help="Name of the rule group")
+parser.add_argument("-b", "--blocklist_url", required=True, help="URL of the blocklist")
 
 # Read arguments from command line
 args = parser.parse_args()
@@ -93,8 +98,6 @@ api_key = args.api_key
 profile_id = args.profile_id
 group_name = args.group_name
 blocklist_url = args.blocklist_url
-
-
 
 # Get data
 domains = get_domains(blocklist_url)
@@ -115,5 +118,10 @@ for group in profiles["body"]["groups"]:
     if group["group"] == group_name:
         group_id = group["PK"]
 
-for domain in domains:
-    create_folder_rules(profile_id, api_key, 0, 1, group_id, domain)
+# break into pages and create rules
+page_size = 500 # page size
+page_number = 1 # init page
+
+while paginate(domains, page_size, page_number) != []:
+    create_folder_rules(profile_id, api_key, 0, 1, group_id, paginate(domains, page_size, page_number))
+    page_number += 1
