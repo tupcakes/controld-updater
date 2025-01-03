@@ -30,7 +30,11 @@ def get_domains(url):
         json_data = response.json()
     return [rule["PK"] for rule in json_data.get("rules", [])]
 
-
+def get_do(url):
+    with requests.get(url) as response:
+        response.raise_for_status()
+        json_data = response.json()
+    return json_data["group"]["action"]["do"]
 
 def delete_rule_folder(profile_id, folder_id, api_key):
     url = f"https://api.controld.com/profiles/{profile_id}/groups/{folder_id}"
@@ -101,6 +105,7 @@ blocklist_url = args.blocklist_url
 
 # Get data
 domains = get_domains(blocklist_url)
+folder_do = get_do(blocklist_url)
 
 # delete old folder
 profiles = get_rule_folders(profile_id, api_key)
@@ -110,7 +115,7 @@ for group in profiles["body"]["groups"]:
         delete_rule_folder(profile_id, group_id, api_key)
 
 # create new folder
-create_rule_folder(group_name, 0, 1, profile_id, api_key)
+create_rule_folder(group_name, folder_do, 1, profile_id, api_key)
 
 # load domains
 profiles = get_rule_folders(profile_id, api_key)
