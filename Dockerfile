@@ -1,7 +1,7 @@
 FROM python:alpine
 
 WORKDIR /app
-COPY update-lists.py /app/
+COPY . /app/
 
 # Install dependencies
 RUN apk add \
